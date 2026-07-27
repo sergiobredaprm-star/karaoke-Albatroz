@@ -1,0 +1,12 @@
+{
+  "name": "karaoke-app",
+  "version": "1.0.0",
+  "description": "Karaokê App com busca do YouTube e pontuação em tempo real",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

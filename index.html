@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ALBATROZ-KARAOKE 🎤</title>
+<link rel="stylesheet" href="style.css?v=1.1">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+</head>
+<body>
+<div class="bg"></div>
+<div class="container">
+
+  <h1 class="app-title">🎤 ALBATROZ-KARAOKE</h1>
+  <div class="top-btn-container" style="display:flex;justify-content:center; gap:10px; margin-bottom:20px;">
+    <button id="remote-toggle-btn" class="btn btn-ghost" onclick="toggleRemoteMode()" style="font-size:0.85rem;padding:8px 16px;border:1px solid var(--c2);color:var(--c2);border-radius:20px;">
+      📺 Modo: Telão (Clique para liberar Controle)
+    </button>
+    <button class="btn btn-ghost" onclick="showQrModal()" style="font-size:0.85rem;padding:8px 16px;border:1px solid #4caf50;color:#4caf50;border-radius:20px;">
+      📱 Inserir Usuário (QR Code)
+    </button>
+  </div>
+
+  <!-- Barra de Reações Rápidas (Sempre Visível) -->
+  <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:18px; padding:12px; margin-bottom:20px; text-align:center; backdrop-filter:blur(10px);">
+    <div style="font-size:0.75rem; font-weight:800; color:var(--c1); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+      🙌 Reações da Plateia ao Vivo (Clique para enviar ao telão)
+    </div>
+    <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+      <button onclick="sendAudienceReaction('❤️')" style="background:rgba(236,72,153,0.2); border:1px solid #ec4899; color:#fff; border-radius:12px; padding:8px 16px; font-size:1.4rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">❤️ <span style="font-size:0.8rem; color:#ec4899;">Amei</span></button>
+      <button onclick="sendAudienceReaction('🔥')" style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fff; border-radius:12px; padding:8px 16px; font-size:1.4rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">🔥 <span style="font-size:0.8rem; color:#f59e0b;">Fogo</span></button>
+      <button onclick="sendAudienceReaction('👏')" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#fff; border-radius:12px; padding:8px 16px; font-size:1.4rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">👏 <span style="font-size:0.8rem; color:#10b981;">Palmas</span></button>
+      <button onclick="sendAudienceReaction('😭')" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#fff; border-radius:12px; padding:8px 16px; font-size:1.4rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">😭 <span style="font-size:0.8rem; color:#3b82f6;">Choro</span></button>
+      <button onclick="sendAudienceReaction('😴')" style="background:rgba(148,163,184,0.2); border:1px solid #94a3b8; color:#fff; border-radius:12px; padding:8px 16px; font-size:1.4rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">😴 <span style="font-size:0.8rem; color:#94a3b8;">Sono</span></button>
+      <button onclick="sendAudienceReaction('👑')" style="background:rgba(234,179,8,0.2); border:1px solid #eab308; color:#fff; border-radius:12px; padding:8px 16px; font-size:1.4rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">👑 <span style="font-size:0.8rem; color:#eab308;">Rei</span></button>
+    </div>
+  </div>
+
+
+  <!-- Theme switcher -->
+  <div class="themes">
+    <div class="theme-dot neon" data-theme="neon" onclick="applyTheme('neon')" title="Neon"></div>
+    <div class="theme-dot fire" data-theme="fire" onclick="applyTheme('fire')" title="Fogo"></div>
+    <div class="theme-dot ocean" data-theme="ocean" onclick="applyTheme('ocean')" title="Oceano"></div>
+  </div>
+
+  <!-- Setup card -->
+  <div class="card" id="setup-card">
+
+    <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border);">
+      <button id="tab-btn-busca" onclick="switchTab('busca')" style="flex:1;padding:9px 4px;background:none;border:none;color:var(--text);font-size:.82rem;font-weight:700;cursor:pointer;border-bottom:2px solid var(--c1);margin-bottom:-2px;transition:.2s;">🔍 Busca</button>
+      <button id="tab-btn-reacoes" onclick="switchTab('reacoes')" style="flex:1;padding:9px 4px;background:none;border:none;color:var(--sub);font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;">👏 Reações</button>
+      <button id="tab-btn-lista" onclick="switchTab('lista')" style="flex:1;padding:9px 4px;background:none;border:none;color:var(--sub);font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;">📋 Lista (<span id="queue-count">0</span>)</button>
+      <button id="tab-btn-historico" onclick="switchTab('historico')" style="flex:1;padding:9px 4px;background:none;border:none;color:var(--sub);font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;">🕐 Histórico</button>
+      <button id="tab-btn-ranking" onclick="switchTab('ranking')" style="flex:1;padding:9px 4px;background:none;border:none;color:var(--sub);font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;">🏆 Ranking</button>
+    </div>
+
+    <!-- Tab: Busca -->
+    <div id="tab-busca">
+      <div class="row2" style="margin-bottom:12px;">
+        <div>
+          <label>Nome do Participante</label>
+          <input id="inp-singer" placeholder="Quem vai cantar?" list="singers-list" autocomplete="off"/>
+        </div>
+        <div>
+          <label>Rodadas</label>
+          <input id="inp-rounds" type="number" min="1" value="1" autocomplete="off"/>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>Artista</label>
+          <input id="inp-artist" placeholder="ex: Titãs" list="artists-list" autocomplete="off"/>
+          <datalist id="artists-list"></datalist>
+          <datalist id="singers-list"></datalist>
+        </div>
+        <div>
+          <label>Nome da Música</label>
+          <input id="inp-track" placeholder="ex: Epitáfio" list="tracks-list" autocomplete="off"/>
+          <datalist id="tracks-list"></datalist>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" id="search-btn" onclick="searchYouTube()" style="width:100%;padding:12px;font-size:1rem;" title="Buscar vídeos de karaokê no YouTube">🔍 Buscar Música no YouTube</button>
+        <input id="inp-url" type="hidden" autocomplete="off" />
+      </div>
+
+      <!-- Search Results Panel -->
+      <div id="search-results-panel" class="hidden" style="margin-bottom:16px;background:rgba(255,255,255,.02);border:1px dashed var(--border);border-radius:14px;padding:12px;max-height:240px;overflow-y:auto;">
+        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--sub);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <span>🔍 Resultados Encontrados:</span>
+          <button onclick="hideSearchResults()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;">fechar ✕</button>
+        </div>
+        <div id="search-results-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <div id="action-btns-wrap" style="display:flex;gap:10px;margin-bottom:14px;">
+        <button class="btn btn-primary" id="start-btn" onclick="startKaraoke()" style="flex:2; display:none;">🎵 Iniciar Karaokê</button>
+        <button class="btn btn-ghost" id="add-queue-btn" onclick="addToQueue()" style="flex:1;padding:12px 10px; display:none;" title="Adicionar música à fila de reprodução">➕ Fila</button>
+        <button class="btn btn-primary" id="confirm-song-btn" onclick="confirmSongSelection()" style="flex:1;padding:12px 10px; background:#4caf50; font-weight:bold; box-shadow:0 4px 15px rgba(76,175,80,0.3); display:none;" title="Confirmar Música">✅ Confirmar Música</button>
+      </div>
+
+      <div id="err-msg" class="err-box hidden"></div>
+    </div>
+
+    <!-- Tab: Reações ao Vivo da Plateia -->
+    <div id="tab-reacoes" style="display:none; text-align:center; padding:10px 0;">
+      <h3 style="font-size:1.05rem; font-weight:800; color:var(--text); margin-bottom:6px;">🙌 Interação com a Plateia</h3>
+      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:16px;">Toque nos botões para enviar reações em tempo real para o telão!</p>
+      
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+        <button onclick="sendAudienceReaction('❤️')" style="background:rgba(236,72,153,0.15); border:1px solid #ec4899; color:#fff; border-radius:14px; padding:16px 8px; cursor:pointer; font-size:2rem; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+          ❤️<br><span style="font-size:0.75rem; font-weight:700; color:#ec4899;">Amei!</span>
+        </button>
+        <button onclick="sendAudienceReaction('🔥')" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fff; border-radius:14px; padding:16px 8px; cursor:pointer; font-size:2rem; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+          🔥<br><span style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Fogo!</span>
+        </button>
+        <button onclick="sendAudienceReaction('👏')" style="background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#fff; border-radius:14px; padding:16px 8px; cursor:pointer; font-size:2rem; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+          👏<br><span style="font-size:0.75rem; font-weight:700; color:#10b981;">Palmas</span>
+        </button>
+        <button onclick="sendAudienceReaction('😭')" style="background:rgba(59,130,246,0.15); border:1px solid #3b82f6; color:#fff; border-radius:14px; padding:16px 8px; cursor:pointer; font-size:2rem; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+          😭<br><span style="font-size:0.75rem; font-weight:700; color:#3b82f6;">Choro</span>
+        </button>
+        <button onclick="sendAudienceReaction('😴')" style="background:rgba(148,163,184,0.15); border:1px solid #94a3b8; color:#fff; border-radius:14px; padding:16px 8px; cursor:pointer; font-size:2rem; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+          😴<br><span style="font-size:0.75rem; font-weight:700; color:#94a3b8;">Sono</span>
+        </button>
+        <button onclick="sendAudienceReaction('👑')" style="background:rgba(234,179,8,0.15); border:1px solid #eab308; color:#fff; border-radius:14px; padding:16px 8px; cursor:pointer; font-size:2rem; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+          👑<br><span style="font-size:0.75rem; font-weight:700; color:#eab308;">Rei/Rainha</span>
+        </button>
+      </div>
+      <div id="reaction-sent-toast" style="display:none; font-size:0.85rem; color:#10b981; font-weight:700; background:rgba(16,185,129,0.1); padding:8px; border-radius:8px;">
+        ✨ Reação enviada para o telão!
+      </div>
+    </div>
+
+    <!-- Tab: Lista -->
+    <div id="tab-lista" style="display:none;">
+      <div class="queue-list" id="queue-wrap">
+        <div class="queue-empty-msg">A fila está vazia. Adicione músicas para tocar em sequência!</div>
+      </div>
+    </div>
+
+    <!-- Tab: Histórico -->
+    <div id="tab-historico" style="display:none;">
+      <div class="history-list" id="history-wrap">
+        <span style="color:var(--dim);font-size:.8rem">Nenhuma música ainda.</span>
+      </div>
+    </div>
+
+    <!-- Tab: Ranking -->
+    <div id="tab-ranking" style="display:none;">
+      <div class="history-list" id="ranking-wrap">
+        <span style="color:var(--dim);font-size:.8rem">Nenhuma nota ainda.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- YouTube Player -->
+  <div id="player-wrap" style="position:relative; background:#000;">
+    <button class="fs-exit-btn" onclick="exitPlayerFullscreen()" title="Sair da tela cheia">✕</button>
+    <div id="yt-player-div"></div>
+    
+    <!-- Countdown overlay moved inside player-wrap for fullscreen support -->
+    <div id="countdown-overlay" style="display:none; position:absolute; inset:0; z-index:200; background:rgba(0,0,0,.85); flex-direction:column; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
+      <div id="countdown-info" style="text-align:center; margin-bottom:20px; animation:cd-pop .9s ease-out;">
+        <div style="font-size:1.5rem; font-weight:800; color:var(--c1); margin-bottom:8px;">🎤 <span id="cd-singer"></span></div>
+        <div style="font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:4px;">🎵 <span id="cd-track"></span></div>
+        <div style="font-size:1rem; color:var(--sub);">👤 <span id="cd-artist"></span></div>
+      </div>
+      <div class="countdown-num" id="countdown-num">3</div>
+      <div style="margin-top:20px; font-size:0.8rem; color:var(--dim);">O vídeo iniciará em tela cheia</div>
+    </div>
+  </div>
+
+  <!-- Karaoke card -->
+  <div class="card hidden" id="karaoke-card">
+
+    <!-- Tournament Status Header -->
+    <div id="tour-header-banner" style="display:none; background:linear-gradient(90deg, var(--c1), var(--c2)); border-radius:12px; padding:10px 16px; margin-bottom:16px; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(123,97,255,.2); border:1px solid rgba(255,255,255,0.15);">
+      <span style="font-weight:700; color:#fff; font-size:.9rem;"><span id="tour-banner-round">Rodada 1/3</span></span>
+      <span style="font-weight:800; background:#fff; color:var(--bg); padding:3px 10px; border-radius:6px; font-size:.8rem; text-transform:uppercase; box-shadow:0 2px 6px rgba(0,0,0,0.15);" id="tour-banner-player">Vez de: Alice</span>
+    </div>
+
+    <!-- Tournament Waiting Screen -->
+    <div id="tour-waiting-screen" style="display:none; background:rgba(255,255,255,0.02); border:1px dashed var(--border); border-radius:16px; padding:24px; text-align:center; margin-bottom:16px;">
+      <div class="result-emoji" style="font-size:3rem; margin-bottom:10px; animation:cd-pop 1.5s infinite alternate;">⏳</div>
+      <h3 style="font-size:1.2rem; font-weight:800; color:var(--c2); margin-bottom:6px;">Aguardando Música...</h3>
+      <p style="font-size:0.9rem; color:var(--sub); margin-bottom:18px;">
+        <span id="tour-wait-player-name" style="font-weight:700; color:var(--text);">Alice</span> está escolhendo a música da <b>Rodada <span id="tour-wait-round-num">1</span></b> pelo celular.
+      </p>
+      <div style="font-size:0.75rem; color:var(--dim); margin-bottom:18px;">Como convidado, vá até a aba "Disputa" no celular para escolher!</div>
+      <button class="btn btn-ghost" onclick="showManualChoiceOnTv()" style="width:100%; padding:10px; font-size:0.85rem; border:1px dashed rgba(255,255,255,0.15);">⌨️ Escolher música pelo PC</button>
+    </div>
+
+    <!-- Controls bar -->
+    <div class="controls-bar">
+      <button class="btn btn-mic" id="mic-btn" onclick="toggleMic()">🎤 Ativar Microfone</button>
+      <button class="btn btn-ghost btn-sm" id="fs-btn" onclick="openFsOverlay()" title="Letras em tela cheia">⛶ Tela Cheia</button>
+      <button class="btn btn-danger btn-sm" onclick="stopKaraoke()">⏹ Parar</button>
+    </div>
+
+    <!-- Next Song Indicator -->
+    <div id="next-song-banner" style="display:none;background:rgba(255,255,255,.03);border:1px dashed var(--border);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:.8rem;color:var(--sub);align-items:center;gap:6px;justify-content:center;">
+      <span>⏭ Próxima da Fila:</span> <b id="next-song-title" style="color:var(--c2)"></b>
+    </div>
+
+    <!-- Lyrics stage -->
+    <div class="lyrics-stage" id="lyrics-stage" style="position:relative">
+      <div class="lyric-empty">As letras aparecerão aqui sincronizadas...</div>
+    </div>
+
+    <!-- Sync offset -->
+    <div class="sync-row">
+      <span style="font-size:.75rem;color:var(--sub)">⏱ Ajuste de sync:</span>
+      <button class="btn btn-ghost btn-sm" onclick="adjustOffset(-0.5)">− 0.5s</button>
+      <span class="sync-offset" id="offset-val">0.0s</span>
+      <button class="btn btn-ghost btn-sm" onclick="adjustOffset(0.5)">+ 0.5s</button>
+    </div>
+
+    <!-- Score bar -->
+    <div class="score-section">
+      <div class="score-header">
+        <span class="score-label-text">Pontuação em tempo real</span>
+        <span class="score-val" id="score-val">0</span>
+      </div>
+      <div class="score-bar"><div class="score-fill" id="score-fill"></div></div>
+    </div>
+
+    <!-- Scrolling pitch matches chart -->
+    <div class="pitch-chart-row" style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="pitch-label" style="font-size:.75rem;color:var(--sub)">🎵 Afinação & Notas (Voz vs Melodia)</span>
+        <span id="note-name" style="font-size:.8rem;font-weight:700;color:var(--c2);background:rgba(255,255,255,.05);padding:2px 8px;border-radius:6px;min-width:32px;text-align:center;">--</span>
+      </div>
+      <div style="position:relative;background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:14px;overflow:hidden;height:120px;box-shadow:inset 0 0 15px rgba(0,0,0,.5);">
+        <canvas id="pitch-chart-canvas" style="display:block;width:100%;height:100%;"></canvas>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" id="stat-score">0</div><div class="stat-lbl">Score</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-acc">0%</div><div class="stat-lbl">Precisão</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-lines">0</div><div class="stat-lbl">Linhas</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-combo">0</div><div class="stat-lbl">Combo</div></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Countdown moved inside player-wrap -->
+
+<!-- Fullscreen lyrics overlay -->
+<div id="fs-overlay">
+  <button class="fs-close" id="fs-close-btn" onclick="closeFsOverlay()">✕</button>
+  <div class="fs-lyrics">
+    <div class="fs-prev" id="fs-prev"></div>
+    <div class="fs-current lyric-active-wrap" id="fs-current"></div>
+    <div class="fs-next" id="fs-next"></div>
+  </div>
+  <!-- Mini score in FS -->
+  <div style="position:absolute;bottom:30px;width:320px;left:50%;transform:translateX(-50%)">
+    <div class="score-bar"><div class="score-fill" id="fs-score-fill" style="transition:width .4s"></div></div>
+  </div>
+</div>
+
+<!-- Result overlay -->
+<div id="result-overlay">
+  <div class="result-card">
+    <div class="result-emoji" id="res-emoji">🎤</div>
+    <div class="result-score" id="res-score">0</div>
+    <div class="result-stars" id="res-stars">⭐⭐⭐</div>
+    <div class="result-rank" id="res-rank">Iniciante</div>
+    <div class="result-sub" id="res-sub"></div>
+    <div class="result-btns">
+      <button class="btn btn-ghost" onclick="playAgain()">🔁 Cantar de novo</button>
+      <button class="btn btn-primary" onclick="resetApp()">🎵 Nova música</button>
+    </div>
+
+    <!-- Tournament Specific Leaderboard -->
+    <div id="tour-result-section" style="display:none; margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+      <h3 style="font-size:1rem; color:var(--c2); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; font-weight:700;">🏆 Classificação do Torneio</h3>
+      <div id="tour-leaderboard" style="display:flex; flex-direction:column; gap:8px; text-align:left;">
+        <!-- Dynamic leaderboard items -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tournament Final Podium Overlay -->
+<div id="tour-podium-overlay" style="display:none; position:fixed; inset:0; z-index:400; background:rgba(0,0,0,0.92); justify-content:center; align-items:center; backdrop-filter:blur(15px); flex-direction:column; color:var(--text);">
+  <div class="result-card" style="max-width:500px; width:92%; position:relative; overflow:hidden;">
+    <!-- Confetti Canvas -->
+    <canvas id="podium-confetti" style="position:absolute; inset:0; pointer-events:none; width:100%; height:100%; z-index:1;"></canvas>
+    
+    <div style="position:relative; z-index:2;">
+      <div class="result-emoji" style="font-size:4rem; margin-bottom:5px; animation:cd-pop 1s infinite alternate;">🏆</div>
+      <h2 style="font-size:1.8rem; font-weight:900; background:linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:4px;">Fim de Jogo!</h2>
+      <p style="font-size:.9rem; color:var(--sub); margin-bottom:20px;" id="tour-podium-subtitle">Temos um vencedor!</p>
+      
+      <!-- Podium visual display -->
+      <div style="display:flex; justify-content:center; align-items:flex-end; gap:12px; height:180px; margin-bottom:24px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1);">
+        <!-- 2nd Place -->
+        <div id="podium-2nd" style="display:flex; flex-direction:column; align-items:center; flex:1;">
+          <span style="font-size:.78rem; font-weight:600; color:var(--sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px;" id="podium-2nd-name">Carol</span>
+          <div style="width:100%; height:60px; background:linear-gradient(180deg, #b0bec5, #78909c); border-top-left-radius:8px; border-top-right-radius:8px; display:flex; justify-content:center; align-items:center; box-shadow:0 -4px 10px rgba(0,0,0,.2);">
+            <span style="font-size:1.5rem; font-weight:900; color:#fff;">2</span>
+          </div>
+          <span style="font-size:.75rem; color:var(--sub); margin-top:4px;" id="podium-2nd-score">0 pts</span>
+        </div>
+        
+        <!-- 1st Place -->
+        <div id="podium-1st" style="display:flex; flex-direction:column; align-items:center; flex:1.2;">
+          <span style="font-size:1.1rem; font-weight:900; color:var(--c2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100px;" id="podium-1st-name">Alice</span>
+          <div style="width:100%; height:100px; background:linear-gradient(180deg, #ffd54f, #ffb300); border-top-left-radius:10px; border-top-right-radius:10px; display:flex; justify-content:center; align-items:center; box-shadow:0 -6px 15px rgba(255,179,0,.4); position:relative;">
+            <span style="position:absolute; top:-22px; font-size:1.5rem;">👑</span>
+            <span style="font-size:2.2rem; font-weight:900; color:#fff;">1</span>
+          </div>
+          <span style="font-size:.85rem; font-weight:700; color:var(--c2); margin-top:4px;" id="podium-1st-score">0 pts</span>
+        </div>
+        
+        <!-- 3rd Place -->
+        <div id="podium-3rd" style="display:flex; flex-direction:column; align-items:center; flex:1;">
+          <span style="font-size:.78rem; font-weight:600; color:var(--sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px;" id="podium-3rd-name">Bob</span>
+          <div style="width:100%; height:40px; background:linear-gradient(180deg, #ff8a65, #d84315); border-top-left-radius:8px; border-top-right-radius:8px; display:flex; justify-content:center; align-items:center; box-shadow:0 -4px 10px rgba(0,0,0,.2);">
+            <span style="font-size:1.3rem; font-weight:900; color:#fff;">3</span>
+          </div>
+          <span style="font-size:.75rem; color:var(--sub); margin-top:4px;" id="podium-3rd-score">0 pts</span>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary" onclick="exitTournament()" style="width:100%; padding:14px; font-size:1rem; font-weight:700;">🎉 Finalizar e Sair</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Floating History Modal -->
+<div id="history-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+  <div id="history-modal-box" style="background:#1e1e24; border:1px solid var(--border); border-radius:16px; padding:20px; width:90%; max-width:350px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+    
+    <!-- Step 1: Ask -->
+    <div id="history-step-1">
+      <h3 style="margin:0 0 10px 0; color:var(--text); font-size:1.1rem;">Colocar na lista?</h3>
+      <p id="history-modal-song-name" style="color:var(--c2); font-weight:700; margin-bottom:20px; font-size:0.95rem;"></p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button class="btn btn-ghost" onclick="closeHistoryModal()" style="flex:1;">Não</button>
+        <button class="btn btn-primary" onclick="historyModalNextStep()" style="flex:1;">Sim</button>
+      </div>
+    </div>
+    
+    <!-- Step 2: Form -->
+    <div id="history-step-2" style="display:none; text-align:left;">
+      <h3 style="margin:0 0 16px 0; color:var(--text); font-size:1.1rem; text-align:center;">Detalhes</h3>
+      <div style="margin-bottom:12px;">
+        <label style="display:block; margin-bottom:6px; font-size:0.8rem; color:var(--sub);">Nome do Participante</label>
+        <input id="history-inp-singer" placeholder="Quem vai cantar?" list="singers-list" style="width:100%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:var(--text); outline:none;" autocomplete="off" />
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; margin-bottom:6px; font-size:0.8rem; color:var(--sub);">Rodadas</label>
+        <input id="history-inp-rounds" type="number" min="1" value="1" style="width:100%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:var(--text); outline:none;" autocomplete="off" />
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" onclick="closeHistoryModal()" style="flex:1;">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmHistoryAdd()" style="flex:1; background:#4caf50;">OK ✅</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Floating QR Code Modal -->
+<div id="qr-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+  <div style="background:#1e1e24; border:1px solid var(--border); border-radius:16px; padding:24px; width:90%; max-width:340px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+    <h3 style="margin:0 0 10px 0; color:var(--text); font-size:1.2rem;">Conectar Controle Remoto</h3>
+    <p style="color:var(--sub); font-size:0.85rem; margin-bottom:15px;">Peça para os participantes escanearem este código para escolherem músicas pelo celular!</p>
+    
+    <div id="qrcode-container" style="background:#fff; padding:16px; border-radius:12px; display:inline-block; margin-bottom:15px;"></div>
+    
+    <div style="color:var(--text); font-size:0.8rem; word-break:break-all; margin-bottom:15px; background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; border:1px dashed var(--border);">
+      <span style="color:var(--sub); display:block; margin-bottom:4px; font-size:0.75rem;">Ou acesse no celular:</span>
+      <a id="qr-link-text" href="#" target="_blank" style="color:var(--c1); text-decoration:none; font-weight:bold;">http://localhost:8765/?remote=true</a>
+    </div>
+    
+    <p style="color:#ffb74d; font-size:0.75rem; margin:0 0 20px 0; line-height: 1.4;">
+      ⚠️ <strong>Atenção:</strong> O celular e o computador precisam estar conectados no mesmo Wi-Fi!
+    </p>
+    
+    <button class="btn btn-ghost" onclick="closeQrModal()" style="width:100%;">Fechar ✕</button>
+  </div>
+</div>
+
+<!-- Floating Mirroring Modal -->
+<div id="mirror-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+  <div style="background:#1e1e24; border:1px solid var(--border); border-radius:16px; padding:24px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5); overflow-y:auto; max-height:90vh;">
+    <h3 style="margin:0 0 10px 0; color:var(--text); font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+      📺 Espelhamento de Tela
+    </h3>
+    <p style="color:var(--sub); font-size:0.85rem; margin-bottom:20px;">Como exibir este Karaokê no telão da sua TV:</p>
+    
+    <!-- Option 1: Browser Casting -->
+    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:18px; text-align:left;">
+      <h4 style="font-size:0.9rem; color:var(--c1); margin-bottom:6px; font-weight:700;">1. Transmitir do Navegador (Recomendado)</h4>
+      <p style="font-size:0.78rem; color:var(--sub); margin-bottom:12px;">Se você usa Google Chrome ou Microsoft Edge, pode enviar esta aba direto para aparelhos compatíveis (Chromecast, Android TV, etc.):</p>
+      <button class="btn btn-primary btn-sm" onclick="triggerPresentationCast()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:6px; background:linear-gradient(135deg, var(--c1), var(--c2));">
+        📺 Abrir Menu de Transmissão
+      </button>
+    </div>
+    
+    <!-- Option 2: Native Device Mirroring -->
+    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px; text-align:left;">
+      <h4 style="font-size:0.9rem; color:var(--c2); margin-bottom:10px; font-weight:700;">2. Espelhar Tela do Aparelho</h4>
+      <p style="font-size:0.78rem; color:var(--sub); margin-bottom:12px;">Use a função nativa do seu celular ou tablet para espelhar tudo o que você vê na TV:</p>
+      
+      <!-- Device instructions switch buttons -->
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
+        <button id="btn-inst-android" onclick="switchInstructions('android')" style="flex:1; padding:6px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:0.75rem; cursor:pointer; font-weight:600;">🤖 Android</button>
+        <button id="btn-inst-ios" onclick="switchInstructions('ios')" style="flex:1; padding:6px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; color:var(--sub); font-size:0.75rem; cursor:pointer; font-weight:600;">🍎 iPhone</button>
+        <button id="btn-inst-pc" onclick="switchInstructions('pc')" style="flex:1; padding:6px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; color:var(--sub); font-size:0.75rem; cursor:pointer; font-weight:600;">💻 PC</button>
+      </div>
+      
+      <!-- Instructions content -->
+      <div id="inst-android" style="font-size:0.78rem; color:var(--sub); line-height:1.4;">
+        <p>1. Deslize a barra de notificações para baixo para abrir as configurações rápidas.</p>
+        <p>2. Procure por <b>Smart View</b>, <b>Transmitir</b>, <b>Espelhar Tela</b> ou <b>SmartThings</b>.</p>
+        <p>3. Toque no ícone e selecione a sua Smart TV para começar.</p>
+      </div>
+      <div id="inst-ios" style="display:none; font-size:0.78rem; color:var(--sub); line-height:1.4;">
+        <p>1. Abra a Central de Controle (deslize do canto superior direito da tela para baixo).</p>
+        <p>2. Toque no botão <b>Espelhar Tela</b> (ícone de duas telas sobrepostas 🔲🔲).</p>
+        <p>3. Selecione a sua Smart TV ou Apple TV na lista e digite o código se solicitado.</p>
+      </div>
+      <div id="inst-pc" style="display:none; font-size:0.78rem; color:var(--sub); line-height:1.4;">
+        <p>1. No seu navegador (Chrome/Edge), clique nos três pontinhos no canto superior direito.</p>
+        <p>2. Escolha <b>Transmitir...</b> (ou Transmitir, salvar e compartilhar -> Transmitir).</p>
+        <p>3. Selecione a sua TV. Dica: clique em "Fontes" para escolher se quer transmitir a guia ou a tela inteira.</p>
+      </div>
+    </div>
+    
+    <button class="btn btn-ghost" onclick="closeMirrorModal()" style="width:100%;">Fechar ✕</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
